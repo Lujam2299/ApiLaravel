@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use App\Models\apiUser;
 use Illuminate\Validation\Rules\Password;
+use Illuminate\Support\Str;
+
 
 
 
@@ -78,6 +80,8 @@ class AuthController extends Controller
                 'email' => $validatedData['email'],
                 'password' => Hash::make($validatedData['password']),
                 'telefono' => $validatedData['telefono'],
+                'remember_token' => Str::random(80), 
+                'email_verified_at' => now()
             ]);
 
             $token = $user->createToken('auth_token')->plainTextToken;
@@ -85,7 +89,7 @@ class AuthController extends Controller
             return response()->json([
                 'access_token' => $token,
                 'token_type' => 'Bearer',
-                'message' => 'Registration successful',
+                'message' => 'Registro exitoso',
             ], 201);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json(['message' => 'Validation error', 'errors' => $e->errors()], 422);

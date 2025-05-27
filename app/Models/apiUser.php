@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 
 class apiUser extends Authenticatable
 {
@@ -22,7 +23,9 @@ class apiUser extends Authenticatable
       'name',
         'email',
         'password',
-        'telefono'
+        'telefono',
+        'email_verified_at',
+        'remember_token'
     ];
 
     /**
