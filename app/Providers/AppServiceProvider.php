@@ -3,6 +3,10 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Http\Request;
+use Closure;
+
+
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -21,4 +25,5 @@ class AppServiceProvider extends ServiceProvider
     {
         //
     }
+  
 }

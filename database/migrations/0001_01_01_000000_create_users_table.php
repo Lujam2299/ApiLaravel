@@ -13,19 +13,12 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('sol_alta_id')->nullable();
-            $table->unsignedBigInteger('sol_docs_id')->nullable();
             $table->string('name');
-            $table->string('email')->nullable();
+            $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
-            $table->rememberToken()->nullable();
+            $table->rememberToken();
             $table->timestamps();
-            $table->date('fecha_ingreso')->nullable();
-            $table->string('punto')->nullable();
-            $table->string('rol')->nullable();
-            $table->string('estatus')->nullable();
-            $table->string('empresa')->nullable();
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {

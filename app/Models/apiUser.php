@@ -6,28 +6,23 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 
-class User extends Authenticatable
+class apiUser extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
-
+    use HasFactory, Notifiable,HasApiTokens;
+    protected $table = 'api_users';
     /**
      * The attributes that are mass assignable.
      *
      * @var list<string>
      */
     protected $fillable = [
-        'sol_alta_id',
-        'sol_docs_id',
-        'name',
+      'name',
         'email',
         'password',
-        'fecha_ingreso',
-        'punto',
-        'rol',
-        'estatus',
-        'empresa'
+        'telefono'
     ];
 
     /**
