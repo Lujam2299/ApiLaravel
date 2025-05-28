@@ -2,17 +2,17 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
-use Illuminate\Contracts\Auth\MustVerifyEmail;
+
 
 class apiUser extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable,HasApiTokens;
+    use HasFactory, Notifiable, HasApiTokens;
     protected $table = 'api_users';
     /**
      * The attributes that are mass assignable.
@@ -20,7 +20,7 @@ class apiUser extends Authenticatable
      * @var list<string>
      */
     protected $fillable = [
-      'name',
+        'name',
         'email',
         'password',
         'telefono',
