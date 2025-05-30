@@ -10,8 +10,7 @@ use App\Http\Controllers\Turnos\TurnosController;
 // rutas publicas
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/register', [AuthController::class, 'register']);
-Route::post('/guardarTurno', [TurnosController::class, 'guardarTurno']);
-Route::post('/guaradarGastos', [GastosController::class, 'guaradarGastos']);
+
 
 
 
@@ -23,4 +22,7 @@ Route::middleware('auth:sanctum')->group(function () {
     //rutas de auteticacion
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/user', fn(Request $request) => $request->user());
+    //rutas de gastos y turnos(entrada y salida)
+    Route::post('/guardarTurno', [TurnosController::class, 'guardarTurno']);
+    Route::post('/guaradarGastos', [GastosController::class, 'guaradarGastos']);
 });
