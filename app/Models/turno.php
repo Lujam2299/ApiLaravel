@@ -7,11 +7,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class turno extends Model
 {
-     use HasFactory;
- protected $table = 'turno';
- protected $primaryKey = 'id';
- public $timestamps = true;
-protected $fillable = [
+    use HasFactory;
+    protected $table = 'turno';
+    protected $primaryKey = 'id';
+    public $timestamps = true;
+
+    protected $fillable = [
         'User_id',
         'Nombre_elemento',
         'Tipo',
@@ -26,6 +27,7 @@ protected $fillable = [
         'Evidencia_inicio',
         'Evidencia_final',
     ];
+
 
     /**
      * The attributes that should be hidden for arrays.
@@ -42,9 +44,9 @@ protected $fillable = [
      * @var array
      */
     protected $casts = [
-        'Hora_inicio' => 'time',
-        'Hora_final' => 'time',
-        'Km_inicio' => 'decimal:2',
+        'Hora_inicio' => 'datetime:H:i',
+        'Hora_final' => 'datetime:H:i',
+        'km_inicio' =>  'decimal:2',
         'Km_final' => 'decimal:2',
         'Rayas_gasolina_inicio' => 'decimal:2',
         'Rayas_gasolina_final' => 'decimal:2',

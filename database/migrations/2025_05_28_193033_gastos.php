@@ -16,7 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger('User_id');
             $table->enum('Tipo', ['Viaticos', 'Gasolina']);
             $table->decimal('Monto', 10, 2);
-            $table->date('Fecha')->unique();
+            $table->date('Fecha')->nullable();
             $table->time('Hora')->nullable();
             $table->string('Evidencia')->nullable();
             $table->decimal('Km', 10, 2)->nullable();

@@ -51,7 +51,7 @@ class gastos extends Model
   protected $casts = [
     'Monto' => 'decimal:2',
     'Fecha' => 'date',
-    'Hora' => 'time',
+    'Hora' => 'datetime:H:i',
     'Km' => 'decimal:2',
     'Gasolina_antes_carga' => 'decimal:2',
     'Gasolina_despues_carga' => 'decimal:2',
