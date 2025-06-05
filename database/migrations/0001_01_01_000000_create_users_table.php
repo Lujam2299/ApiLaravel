@@ -11,18 +11,21 @@ return new class extends Migration
      */
     public function up(): void
     {
-       Schema::create('api_users', function (Blueprint $table) {
-    $table->id();
-    $table->string('name');
-    $table->string('email')->unique();
-    $table->timestamp('email_verified_at')->nullable();
-    $table->string('password');
-    $table->enum('rol', ['interno', 'externo'])->default('externo');
-    $table->string('telefono')->nullable();
-    $table->rememberToken()->nullable();
-    $table->timestamps();
-});
+         if (Schema::hasTable('api_users')) {
+        Schema::dropIfExists('api_users');
+    }
 
+    Schema::create('api_users', function (Blueprint $table) {
+        $table->id();
+        $table->string('name');
+        $table->string('email')->unique();
+        $table->timestamp('email_verified_at')->nullable();
+        $table->string('password');
+        $table->enum('rol', ['interno', 'externo'])->default('externo');
+        $table->string('telefono')->nullable();
+        $table->rememberToken()->nullable();
+        $table->timestamps();
+    });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
             $table->string('email')->primary();
@@ -49,4 +52,5 @@ return new class extends Migration
         Schema::dropIfExists('password_reset_tokens');
         Schema::dropIfExists('sessions');
     }
+    
 };
