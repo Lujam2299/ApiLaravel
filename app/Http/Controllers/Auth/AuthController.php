@@ -80,7 +80,7 @@ class AuthController extends Controller
                 'email' => $validatedData['email'],
                 'password' => Hash::make($validatedData['password']),
                 'telefono' => $validatedData['telefono'],
-                'remember_token' => Str::random(80), 
+                'remember_token' => Str::random(80),
                 'email_verified_at' => now()
             ]);
 
@@ -90,6 +90,11 @@ class AuthController extends Controller
                 'access_token' => $token,
                 'token_type' => 'Bearer',
                 'message' => 'Registro exitoso',
+                'user' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                ]
             ], 201);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json(['message' => 'Validation error', 'errors' => $e->errors()], 422);
