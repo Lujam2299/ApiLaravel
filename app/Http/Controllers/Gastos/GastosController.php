@@ -9,10 +9,10 @@ use Illuminate\Validation\ValidationException;
 
 class GastosController extends Controller
 {
-    public function guaradarGastos(Request $request)
-    {
-        try {
-        //Validaciones base simpre y cuendo el tipo sea viaticos
+   public function guardarGastos(Request $request)
+{
+    try {
+        // Validaciones base siempre y cuando el tipo sea viaticos
         $baseRules = [
             'User_id' => 'required|integer',
             'Monto' => 'required|numeric',
@@ -31,27 +31,25 @@ class GastosController extends Controller
             ];
         }
 
-        // Valida los datos de la solisitud
+        // Valida los datos de la solicitud
         $validatedData = $request->validate($baseRules);
 
-        // Guarda los datos validos en la base de datos
+        // Guarda los datos válidos en la base de datos
         $gasto = gastos::create($validatedData);
 
-        // opcion al manejar la carga de archivos
+        // Opción al manejar la carga de archivos
         if ($request->hasFile('Evidencia')) {
             $path = $request->file('Evidencia')->store('evidencias', 'public');
             $gasto->update(['Evidencia' => $path]);
         }
 
-                return response()->json(['message' => 'Gasto guardado de manera exitosa', 'data' => $gasto], 201);
-            } catch (ValidationException $e) {
-              
+        return response()->json(['message' => 'Gasto guardado de manera exitosa', 'data' => $gasto], 201);
+    } catch (ValidationException $e) {
+        // Manejo de errores
+        return response()->json(['errors' => $e->errors()], 422);
+    } catch (\Exception $e) {
+        return response()->json(['error' => 'Se produjo un error al guardar los gastos.'], 500);
+    }
+}
 
-          // manejo de errores
-                return response()->json(['errors' => $e->errors()], 422);
-            } catch (\Exception $e) {
-
-                return response()->json(['error' => 'Se produjo un error al guardar los gastos.'], 500);
-            }
-        }
 }
