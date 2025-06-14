@@ -37,25 +37,30 @@ class gastos extends Model
    *
    * @var array
    */
-  protected $fillable = [
-    'User_id',
-    'Tipo',
-    'Monto',
-    'Fecha',
-    'Hora',
-    'Evidencia',
-    'Km',
-    'Gasolina_antes_carga',
-    'Gasolina_despues_carga'
-  ];
-  protected $casts = [
-    'Monto' => 'decimal:2',
-    'Fecha' => 'date',
-    'Hora' => 'datetime:H:i',
-    'Km' => 'decimal:2',
-    'Gasolina_antes_carga' => 'decimal:2',
-    'Gasolina_despues_carga' => 'decimal:2',
-    'created_at' => 'datetime',
-    'updated_at' => 'datetime',
-  ];
+      protected $fillable = [
+        'user_id',
+        'user_name',
+        'Monto',
+        'Fecha',
+        'Hora',
+        'Evidencia',
+        'Tipo',
+        'Km',
+        'Gasolina_antes_carga',
+        'Gasolina_despues_carga'
+    ];
+
+    protected $casts = [
+        'Fecha' => 'date',
+        'Hora' => 'string',
+        'Monto' => 'decimal:2',
+        'Km' => 'decimal:2',
+        'Gasolina_antes_carga' => 'decimal:2',
+        'Gasolina_despues_carga' => 'decimal:2'
+    ];
+
+    public function user()
+    {
+        return $this->belongsTo(apiUser::class);
+    }
 }

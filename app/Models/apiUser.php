@@ -50,4 +50,8 @@ class apiUser extends Authenticatable
             'password' => 'hashed',
         ];
     }
+    public function gastos()
+{
+    return $this->hasMany(gastos::class);
+}
 }

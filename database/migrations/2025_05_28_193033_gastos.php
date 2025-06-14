@@ -13,17 +13,18 @@ return new class extends Migration
     {
         Schema::create('gastos', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('User_id');
-            $table->enum('Tipo', ['Viaticos', 'Gasolina']);
+            $table->unsignedBigInteger('user_id');
             $table->decimal('Monto', 10, 2);
-            $table->date('Fecha')->nullable();
-            $table->time('Hora')->nullable();
-            $table->string('Evidencia')->nullable();
+            $table->date('Fecha');
+            $table->time('Hora');
+            $table->string('Evidencia');
+            $table->enum('Tipo', ['Viaticos', 'Gasolina']);
+            $table->string('user_name')->nullable();
             $table->decimal('Km', 10, 2)->nullable();
             $table->decimal('Gasolina_antes_carga', 10, 2)->nullable();
             $table->decimal('Gasolina_despues_carga', 10, 2)->nullable();
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->timestamps();
-            $table->foreign('user_id')->references('id')->on('api_users')->onDelete('cascade');
         });
     }
 

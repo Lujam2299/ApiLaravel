@@ -27,6 +27,8 @@ Route::middleware('auth:sanctum')->group(function () {
     //rutas de gastos y turnos(entrada y salida)
     Route::post('/guardarTurno', [TurnosController::class, 'guardarTurno']);
 
-    Route::post('/guaradarGastos', [GastosController::class, 'guaradarGastos']);
+    Route::post('/guardarGastos', [GastosController::class, 'guardarGastos']);
+
+    //rutas de ubicacion
     Route::post('/locations', [LocationController::class, 'store']);
 });

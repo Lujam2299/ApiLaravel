@@ -6,50 +6,64 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\gastos;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Log;
+
+
 
 class GastosController extends Controller
 {
-   public function guardarGastos(Request $request)
-{
-    try {
-        // Validaciones base siempre y cuando el tipo sea viaticos
-        $baseRules = [
-            'User_id' => 'required|integer',
-            'Monto' => 'required|numeric',
-            'Fecha' => 'required|date',
-            'Hora' => 'required|date_format:H:i',
-            'Evidencia' => 'required|file',
-            'Tipo' => 'required|in:Viaticos,Gasolina',
-        ];
+ public function guardarGastos(Request $request)
+    {
+        try {
+            $user = $request->user();
+            
+            if (!$user) {
+                return response()->json(['error' => 'Usuario no autenticado'], 401);
+            }
 
-        // Condicionales extra cuando se elija Gasolina
-        if ($request->input('Tipo') === 'Gasolina') {
-            $baseRules += [
-                'Km' => 'required|numeric',
-                'Gasolina_antes_carga' => 'required|numeric',
-                'Gasolina_despues_carga' => 'required|numeric',
-            ];
-        }
+            $validated = $request->validate([
+                'Monto' => 'required|numeric',
+                'Fecha' => 'required|date',
+                'Hora' => 'required|date_format:H:i',
+                'Evidencia' => 'required|file|mimes:jpg,png,pdf|max:20480',
+                'Tipo' => 'required|in:Viaticos,Gasolina',
+                'Km' => 'nullable|numeric',
+                'Gasolina_antes_carga' => 'nullable|numeric',
+                'Gasolina_despues_carga' => 'nullable|numeric'
+            ]);
 
-        // Valida los datos de la solicitud
-        $validatedData = $request->validate($baseRules);
-
-        // Guarda los datos válidos en la base de datos
-        $gasto = gastos::create($validatedData);
-
-        // Opción al manejar la carga de archivos
-        if ($request->hasFile('Evidencia')) {
             $path = $request->file('Evidencia')->store('evidencias', 'public');
-            $gasto->update(['Evidencia' => $path]);
+
+            $gastoData = [
+                'user_id' => $user->id,
+                'user_name' => $user->name,
+                'Monto' => $validated['Monto'],
+                'Fecha' => $validated['Fecha'],
+                'Hora' => $validated['Hora'],
+                'Evidencia' => $path,
+                'Tipo' => $validated['Tipo'],
+            ];
+
+            // Solo agregar campos si son Gasolina
+            if ($validated['Tipo'] === 'Gasolina') {
+                $gastoData['Km'] = $validated['Km'];
+                $gastoData['Gasolina_antes_carga'] = $validated['Gasolina_antes_carga'];
+                $gastoData['Gasolina_despues_carga'] = $validated['Gasolina_despues_carga'];
+            }
+
+            $gasto = gastos::create($gastoData);
+
+            return response()->json([
+                'success' => true,
+                'data' => $gasto
+            ], 201);
+
+        } catch (\Exception $e) {
+            Log::error('Error al guardar gasto: ' . $e->getMessage());
+            return response()->json([
+                'error' => 'Error al procesar la solicitud',
+                'details' => env('APP_DEBUG') ? $e->getMessage() : null
+            ], 500);
         }
-
-        return response()->json(['message' => 'Gasto guardado de manera exitosa', 'data' => $gasto], 201);
-    } catch (ValidationException $e) {
-        // Manejo de errores
-        return response()->json(['errors' => $e->errors()], 422);
-    } catch (\Exception $e) {
-        return response()->json(['error' => 'Se produjo un error al guardar los gastos.'], 500);
     }
-}
-
 }
