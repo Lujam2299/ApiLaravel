@@ -18,7 +18,7 @@ return new class extends Migration
         $table->enum('Tipo', ['Entrada', 'Salida']);
         $table->time('Hora_inicio')->nullable();
         $table->time('Hora_final')->nullable();
-        $table->decimal('Km_incio', 10, 2)->nullable();
+        $table->decimal('Km_inicio', 10, 2)->nullable();
         $table->decimal('Km_final', 10, 2)->nullable();
         $table->string('Punto');
         $table->string('Placas_unidad'); 

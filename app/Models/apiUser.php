@@ -23,7 +23,9 @@ class apiUser extends Authenticatable
         'name',
         'email',
         'password',
+        'rol',
         'telefono',
+        'punto',
         'email_verified_at',
         'remember_token'
     ];

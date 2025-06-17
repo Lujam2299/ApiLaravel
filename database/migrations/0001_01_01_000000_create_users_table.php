@@ -22,8 +22,10 @@ return new class extends Migration
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->enum('rol', ['interno', 'externo'])->default('interno');
-            $table->string('telefono')->nullable();
+            $table->string('telefono')->unique()->nullable();
+            $table->string('punto')->nullable();
             $table->rememberToken()->nullable();
+            $table->softDeletes(); 
             $table->timestamps();
         });
 

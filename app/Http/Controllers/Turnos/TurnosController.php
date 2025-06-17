@@ -6,49 +6,81 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\turno;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage; // No olvides importar Storage
 
 class TurnosController extends Controller
 {
-    public function guardarTurno(Request $request)
-    {
-        $baseRules = [
-            'User_id' => 'required|integer',
-            'Nombre_elemento' => 'required|string',
-            'Punto' => 'required|string',
-            'Placas_unidad' => 'required|string',
+public function guardarTurno(Request $request)
+{
+    try {
+        $user = $request->user();
+        if (!$user) {
+            return response()->json(['error' => 'Usuario no autenticado'], 401);
+        }
+
+        // Reglas base
+        $rules = [
+            'Placas_unidad' => 'required|string|max:20',
             'Tipo' => 'required|in:Entrada,Salida',
         ];
 
+        // Reglas condicionales
         if ($request->input('Tipo') === 'Entrada') {
-            $baseRules += [
+            $rules += [
                 'Hora_inicio' => 'required|date_format:H:i',
-                'Km_inicio'  => 'required|numeric',
-                'Rayas_gasolina_inicio' => 'required|numeric',
-                'Evidencia_inicio' => 'required|file',
+                'Km_inicio' => 'required|numeric|min:0',
+                'Rayas_gasolina_inicio' => 'required|numeric|min:0|max:100',
+                'Evidencia_inicio' => 'required|file|mimes:jpg,jpeg,png,pdf|max:20480',
             ];
-        } elseif ($request->input('Tipo') === 'Salida') {
-            $baseRules += [
+        } else {
+            $rules += [
                 'Hora_final' => 'required|date_format:H:i',
-                'Km_final' => 'required|numeric',
-                'Rayas_gasolina_final' => 'required|numeric',
-                'Evidencia_final' => 'required|file',
+                'Km_final' => 'required|numeric|min:0',
+                'Rayas_gasolina_final' => 'required|numeric|min:0|max:100',
+                'Evidencia_final' => 'required|file|mimes:jpg,jpeg,png,pdf|max:20480',
             ];
         }
 
-        try {
+        $validatedData = $request->validate($rules);
 
-            $validatedData = $request->validate($baseRules);
+        // Procesar archivos
+        $fileField = $request->input('Tipo') === 'Entrada' ? 'Evidencia_inicio' : 'Evidencia_final';
+        $filePath = $request->file($fileField)->store('evidencias', 'public');
 
+        // Crear registro
+        $turnoData = [
+            'User_id' => $user->id,
+            'Nombre_elemento' => $user->name,
+            'Punto' => $user->punto,
+            'Placas_unidad' => $validatedData['Placas_unidad'],
+            'Tipo' => $validatedData['Tipo'],
+            $fileField => $filePath
+        ];
 
-            $turno = turno::create($validatedData);
+        // Asignar campos dinámicamente
+        $prefix = $validatedData['Tipo'] === 'Entrada' ? 'inicio' : 'final';
+        $turnoData["Hora_$prefix"] = $validatedData["Hora_$prefix"];
+        $turnoData["Km_$prefix"] = $validatedData["Km_$prefix"];
+        $turnoData["Rayas_gasolina_$prefix"] = $validatedData["Rayas_gasolina_$prefix"];
 
-            return response()->json(['message' => 'Turno guardado exitosamente', 'data' => $turno], 201);
-        } catch (ValidationException $e) {
+        $turno = turno::create($turnoData);
 
-            return response()->json(['message' => 'Validación fallida', 'errors' => $e->errors()], 422);
-        } catch (\Exception $e) {
+        return response()->json([
+            'message' => 'Turno guardado exitosamente',
+            'data' => $turno
+        ], 201);
 
-            return response()->json(['message' => 'Error al guardar el turno', 'error' => $e->getMessage()], 500);
-        }
+    } catch (ValidationException $e) {
+        return response()->json([
+            'message' => 'Error de validación',
+            'errors' => $e->errors()
+        ], 422);
+    } catch (\Exception $e) {
+        return response()->json([
+            'message' => 'Error del servidor',
+            'error' => env('APP_DEBUG') ? $e->getMessage() : null
+        ], 500);
     }
+}
 }

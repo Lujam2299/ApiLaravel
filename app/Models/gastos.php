@@ -63,4 +63,5 @@ class gastos extends Model
     {
         return $this->belongsTo(apiUser::class);
     }
+    
 }

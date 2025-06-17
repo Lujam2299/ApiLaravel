@@ -61,6 +61,10 @@ class turno extends Model
      */
     public function user()
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsTo(apiUser::class, 'user_id');
+    }
+       public function turnos()
+    {
+        return $this->hasMany(turno::class, 'user_id');
     }
 }
