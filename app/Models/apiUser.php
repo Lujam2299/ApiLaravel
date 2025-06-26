@@ -7,7 +7,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
-
+/**
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Conversation> $conversations
+ */
 
 class apiUser extends Authenticatable
 {
@@ -53,7 +55,33 @@ class apiUser extends Authenticatable
         ];
     }
     public function gastos()
-{
-    return $this->hasMany(gastos::class);
-}
+    {
+        return $this->hasMany(gastos::class);
+    }
+    public function routeNotificationForFcm()
+    {
+        return $this->fcm_token;
+    }
+
+    public function routeNotificationForApn()
+    {
+        return $this->apn_token;
+    }
+    /**
+     * Las conversaciones a las que pertenece el usuario
+     */
+    public function conversations()
+    {
+        return $this->belongsToMany(Conversation::class, 'conversation_user')
+            ->withPivot('last_read_at')
+            ->withTimestamps();
+    }
+
+    /**
+     * Los mensajes que ha enviado el usuario
+     */
+    public function messages()
+    {
+        return $this->hasMany(Message::class);
+    }
 }

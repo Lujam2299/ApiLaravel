@@ -23,7 +23,7 @@ return new class extends Migration
             $table->decimal('Km', 10, 2)->nullable();
             $table->decimal('Gasolina_antes_carga', 10, 2)->nullable();
             $table->decimal('Gasolina_despues_carga', 10, 2)->nullable();
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('user_id')->references('id')->on('api_users')->onDelete('cascade');
             $table->timestamps();
         });
     }
