@@ -31,7 +31,7 @@ return [
         'reverb' => [
             'host' => env('REVERB_SERVER_HOST', '0.0.0.0'),
             'port' => env('REVERB_SERVER_PORT', 8080),
-            'path' => env('REVERB_SERVER_PATH', 'ws'),
+            'path' => env('REVERB_SERVER_PATH', ''),
             'hostname' => env('REVERB_HOST'),
             'options' => [
                 'tls' => [],
@@ -77,19 +77,13 @@ return [
                 'secret' => env('REVERB_APP_SECRET'),
                 'app_id' => env('REVERB_APP_ID'),
                 'options' => [
-                    'host' => env('REVERB_SERVER_HOST', '0.0.0.0'),
-                    'port' => env('REVERB_SERVER_PORT', 8080),
-                    'path' => env('REVERB_SERVER_PATH', 'ws'),
-                    'hostname' => env('REVERB_HOST', '192.168.1.74'),
-                    'scheme' => env('REVERB_SCHEME', 'https'),
-                    'useTLS' => env('REVERB_SCHEME', 'https') === 'https',
+                    'host' => env('REVERB_HOST'),
+                    'port' => env('REVERB_PORT', 8080),
+                    'scheme' => env('REVERB_SCHEME', 'http'),
+                    // 'useTLS' => env('REVERB_SCHEME', 'https') === 'https',
+                    'useTLS' => false,
                 ],
-                'allowed_origins' => [
-                    'http://192.168.1.74',
-                    'http://localhost',
-                    'exp://192.168.1.74:19000',
-                    //'*'
-                ],
+                'allowed_origins' => [ 'http://192.168.1.74:8000', 'http://localhost','*'],
                 'ping_interval' => env('REVERB_APP_PING_INTERVAL', 60),
                 'activity_timeout' => env('REVERB_APP_ACTIVITY_TIMEOUT', 30),
                 'max_message_size' => env('REVERB_APP_MAX_MESSAGE_SIZE', 10_000),
