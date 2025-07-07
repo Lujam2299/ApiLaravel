@@ -5,17 +5,15 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use App\Models\apiUser;
+use App\Models\apiUser; // Asegúrate de que este es el modelo de usuario correcto
+use App\Models\Mision; // ¡IMPORTANTE! Importa el modelo Mision
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
-
-
+use Illuminate\Support\Facades\Auth; // Asegúrate de importar Auth para Auth::user() si lo usas
 
 class AuthController extends Controller
 {
-
-
     public function login(Request $request)
     {
         try {
@@ -41,6 +39,13 @@ class AuthController extends Controller
 
             $token = $user->createToken('api_token')->plainTextToken;
 
+            // --- LÓGICA AGREGADA: ENCONTRAR LA MISIÓN ACTIVA DEL USUARIO ---
+            // Busca la misión activa a la que el usuario está asignado.
+            // Se asume que 'agentes_id' en la tabla 'misiones' es un campo JSON.
+            $misionActiva = Mision::where('estatus', 'Activa')
+                                  ->whereJsonContains('agentes_id', $user->id) // Verifica si el user_id está en agentes_id
+                                  ->first(); // Obtiene la primera misión activa encontrada
+
             return response()->json([
                 'access_token' => $token,
                 'token_type' => 'Bearer',
@@ -48,8 +53,8 @@ class AuthController extends Controller
                     'id' => $user->id,
                     'name' => $user->name,
                     'email' => $user->email,
-                    'punto' => $user->punto
-                    // Agrega otros campos si son necesarios
+                    'punto' => $user->punto ?? null, // Asegúrate de que 'punto' exista en tu modelo apiUser
+                    'mision_id_activa' => $misionActiva ? $misionActiva->id : null, // Envía la ID de la misión activa
                 ],
                 'message' => 'Ingreso exitoso',
             ], 200);
@@ -93,8 +98,8 @@ class AuthController extends Controller
                 'email' => $validatedData['email'],
                 'password' => Hash::make($validatedData['password']),
                 'telefono' => $validatedData['telefono'] ?? null, // Assign null if not provided in request
-                'rol' => $validatedData['rol'] ?? 'interno',       // Assign validated role, or 'interno' as default
-                'punto' => $validatedData['punto'] ?? null,       // Assign null if not provided
+                'rol' => $validatedData['rol'] ?? 'interno',      // Assign validated role, or 'interno' as default
+                'punto' => $validatedData['punto'] ?? null,      // Assign null if not provided
                 'remember_token' => Str::random(80), // Consider removing if only using Sanctum tokens
                 'email_verified_at' => now() // Typically set to null and filled upon email verification
             ]);
@@ -112,8 +117,8 @@ class AuthController extends Controller
                     'name' => $user->name,
                     'email' => $user->email,
                     'telefono' => $user->telefono, // Include telefono in the response
-                    'rol' => $user->rol,           // Include rol in the response
-                    'punto' => $user->punto,       // Include punto in the response
+                    'rol' => $user->rol,          // Include rol in the response
+                    'punto' => $user->punto,      // Include punto in the response
                 ]
             ], 201);
         } catch (ValidationException $e) {

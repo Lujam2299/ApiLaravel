@@ -4,117 +4,214 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Mision;
+use Illuminate\Support\Carbon;
 
 class MisionItinerarioController extends Controller
 {
-    //Agregar evento al itinerario
+    // Agregar evento al itinerario
+    public function store(Request $request, $mision_id)
+    {
+        $request->validate([
+            'user_id' => 'required|integer|min:1',
+            'fecha' => 'required|date|after_or_equal:today',
+            'hora' => 'required|date_format:H:i',
+            'descripcion' => 'required|string|max:255',
+            'ubicacion' => 'nullable|string|max:255'
+        ]);
 
-public function store(Request $request, $mision_id)
-{
-    $request->validate([
-        'user_id' => 'required|integer',
-        'fecha' => 'required|date',
-        'hora' => 'required|date_format:H:i',
-        'descripcion' => 'required|string|max:255',
-        'ubicacion' => 'nullable|string|max:255'
-    ]);
+        $mision = Mision::findOrFail($mision_id);
+        $currentUser = $request->user();
 
-    $mision = Mision::findOrFail($mision_id);
-    $user = $request->user();
+        // Verificar que la misión esté activa
+        if (strtolower($mision->estatus) !== 'activa') {
+            return response()->json([
+                'success' => false,
+                'message' => 'No se pueden agregar eventos a una misión inactiva'
+            ], 400);
+        }
 
-    // Verificar que la misión esté activa (comparación insensible a mayúsculas)
-    if (strtolower($mision->estatus) !== 'activa') {
-        return response()->json(['message' => 'Misión no activa'], 400);
-    }
+        // Verificar que el usuario autenticado tenga permisos
+        if ($currentUser->id != $request->user_id && !$currentUser->esAdministrador()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No tienes permiso para agregar eventos a este usuario'
+            ], 403);
+        }
 
-    // Verificar que el usuario esté asignado a la misión
-    $agents = is_array($mision->agentes_id) ? $mision->agentes_id : json_decode($mision->agentes_id, true) ?? [];
-    
-    if (!in_array($request->user_id, $agents)) {
-        return response()->json(['message' => 'Usuario no asignado a la misión'], 403);
-    }
+        // Obtener agentes asignados de forma segura
+        $agents = $this->getAgentesFromMision($mision);
+        
+        if (!in_array($request->user_id, $agents)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'El usuario no está asignado a esta misión'
+            ], 403);
+        }
 
-    // Crear el evento
-    $evento = [
-        'user_id' => $request->user_id,
-        'fecha' => $request->fecha,
-        'hora' => $request->hora,
-        'descripcion' => $request->descripcion,
-        'ubicacion' => $request->ubicacion,
-        'created_at' => now()->toDateTimeString()
-    ];
-
-    // Agregar al itinerario
-    $itinerarios = is_array($mision->itinerarios) ? $mision->itinerarios : json_decode($mision->itinerarios, true) ?? [];
-    
-    $userIndex = array_search($request->user_id, array_column($itinerarios, 'user_id'));
-    
-    if ($userIndex !== false) {
-        $itinerarios[$userIndex]['eventos'][] = $evento;
-    } else {
-        $itinerarios[] = [
-            'user_id' => $request->user_id,
-            'eventos' => [$evento]
+        // Crear el evento con marca de tiempo
+        $evento = [
+            'user_id' => (int)$request->user_id,
+            'fecha' => $request->fecha,
+            'hora' => $request->hora,
+            'descripcion' => $request->descripcion,
+            'ubicacion' => $request->ubicacion ?? null,
+            'created_at' => now()->toDateTimeString(),
+            'updated_at' => now()->toDateTimeString()
         ];
+
+        // Obtener itinerarios existentes de forma segura
+        $itinerarios = $this->getItinerariosFromMision($mision);
+        
+        // Buscar o crear entrada para el usuario
+        $userIndex = $this->findUserIndexInItinerarios($itinerarios, $request->user_id);
+        
+        if ($userIndex !== false) {
+            // Agregar evento al usuario existente
+            $itinerarios[$userIndex]['eventos'][] = $evento;
+        } else {
+            // Crear nueva entrada para el usuario
+            $itinerarios[] = [
+                'user_id' => $request->user_id,
+                'eventos' => [$evento]
+            ];
+        }
+
+        // Ordenar eventos por fecha y hora para cada usuario
+        $itinerarios = $this->sortItinerarios($itinerarios);
+
+        // Guardar los cambios
+        $mision->itinerarios = $itinerarios;
+        $mision->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Evento agregado al itinerario correctamente',
+            'data' => $this->getUserItinerarios($itinerarios, $request->user_id)
+        ]);
     }
-
-    $mision->itinerarios = $itinerarios;
-    $mision->save();
-
-    return response()->json([
-        'message' => 'Evento agregado al itinerario',
-        'itinerarios' => $itinerarios
-    ]);
-}
 
     // Obtener itinerarios de un usuario específico
     public function show($mision_id, $user_id)
     {
-       $mision = Mision::findOrFail($mision_id);
+        $mision = Mision::findOrFail($mision_id);
+        $currentUser = auth()->user();
 
-        // 1. Verificar que la misión esté activa
+        // Verificar que la misión esté activa
         if (strtolower($mision->estatus) !== 'activa') {
-            return response()->json(['message' => 'Misión no activa'], 400);
+            return response()->json([
+                'success' => false,
+                'message' => 'No se pueden ver itinerarios de una misión inactiva'
+            ], 400);
         }
 
-        // 2. Verificar que el usuario actual esté asignado a la misión
-        // (Opcional pero recomendado para seguridad: usa el usuario autenticado para la verificación)
-        $currentUser = auth()->user(); // Obtener el usuario autenticado
-        if (!$currentUser || $currentUser->id != $user_id) { // Asegura que el user_id de la URL sea el del usuario logeado
-             return response()->json(['message' => 'Acceso no autorizado al itinerario de este usuario.'], 403);
+        // Verificar permisos del usuario
+        if ($currentUser->id != $user_id && !$currentUser->esAdministrador()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No tienes permiso para ver este itinerario'
+            ], 403);
         }
 
-        $agents = is_array($mision->agentes_id) ? $mision->agentes_id : json_decode($mision->agentes_id, true) ?? [];
+        // Verificar que el usuario esté asignado a la misión
+        $agents = $this->getAgentesFromMision($mision);
         if (!in_array($user_id, $agents)) {
-            return response()->json(['message' => 'Usuario no asignado a la misión.'], 403);
+            return response()->json([
+                'success' => false,
+                'message' => 'El usuario no está asignado a esta misión'
+            ], 403);
         }
 
-        $itinerarios = is_array($mision->itinerarios) ? $mision->itinerarios : json_decode($mision->itinerarios, true) ?? [];
-
-        $userItinerarios = [];
-        foreach ($itinerarios as $itinerario) {
-            if (isset($itinerario['user_id']) && $itinerario['user_id'] == $user_id) {
-                // Opcional: ordenar eventos por fecha y hora si no lo están
-                $eventos = collect($itinerario['eventos'])->sortBy(function ($evento) {
-                    return $evento['fecha'] . ' ' . $evento['hora'];
-                })->values()->all();
-                $userItinerarios = $eventos;
-                break;
-            }
-        }
+        // Obtener y preparar los itinerarios
+        $itinerarios = $this->getItinerariosFromMision($mision);
+        $userItinerarios = $this->getUserItinerarios($itinerarios, $user_id);
 
         return response()->json([
-            'user_id' => $user_id,
-            'eventos' => $userItinerarios
+            'success' => true,
+            'data' => [
+                'user_id' => (int)$user_id,
+                'eventos' => $userItinerarios
+            ]
         ]);
     }
 
-    // Obtener todos los itinerarios de la misión
+    // Obtener todos los itinerarios de la misión (solo para administradores)
     public function index($mision_id)
     {
         $mision = Mision::findOrFail($mision_id);
-        return response()->json($mision->itinerarios ?? []);
+        $currentUser = auth()->user();
+
+        // Solo administradores pueden ver todos los itinerarios
+        if (!$currentUser->esAdministrador()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No tienes permiso para ver todos los itinerarios'
+            ], 403);
+        }
+
+        $itinerarios = $this->getItinerariosFromMision($mision);
+        
+        // Ordenar todos los itinerarios
+        $itinerarios = $this->sortItinerarios($itinerarios);
+
+        return response()->json([
+            'success' => true,
+            'data' => $itinerarios
+        ]);
     }
 
-    
+    // Métodos auxiliares protegidos
+    protected function getAgentesFromMision(Mision $mision): array
+    {
+        if (is_array($mision->agentes_id)) {
+            return $mision->agentes_id;
+        }
+        
+        $decoded = json_decode($mision->agentes_id, true);
+        return is_array($decoded) ? $decoded : [];
+    }
+
+    protected function getItinerariosFromMision(Mision $mision): array
+    {
+        if (is_array($mision->itinerarios)) {
+            return $mision->itinerarios;
+        }
+        
+        $decoded = json_decode($mision->itinerarios, true);
+        return is_array($decoded) ? $decoded : [];
+    }
+
+    protected function findUserIndexInItinerarios(array $itinerarios, int $userId)
+    {
+        foreach ($itinerarios as $index => $itinerario) {
+            if (isset($itinerario['user_id']) && $itinerario['user_id'] == $userId) {
+                return $index;
+            }
+        }
+        return false;
+    }
+
+    protected function sortItinerarios(array $itinerarios): array
+    {
+        foreach ($itinerarios as &$itinerario) {
+            if (isset($itinerario['eventos']) && is_array($itinerario['eventos'])) {
+                usort($itinerario['eventos'], function ($a, $b) {
+                    $dateA = Carbon::parse($a['fecha'] . ' ' . $a['hora']);
+                    $dateB = Carbon::parse($b['fecha'] . ' ' . $b['hora']);
+                    return $dateA <=> $dateB;
+                });
+            }
+        }
+        
+        return $itinerarios;
+    }
+
+    protected function getUserItinerarios(array $itinerarios, int $userId): array
+    {
+        foreach ($itinerarios as $itinerario) {
+            if (isset($itinerario['user_id']) && $itinerario['user_id'] == $userId) {
+                return $itinerario['eventos'] ?? [];
+            }
+        }
+        return [];
+    }
 }
