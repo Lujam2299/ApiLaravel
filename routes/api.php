@@ -41,4 +41,19 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/', [MisionItinerarioController::class, 'index'])->name('misiones.itinerarios.index');
         Route::get('/user/{user_id}', [MisionItinerarioController::class, 'show'])->name('misiones.itinerarios.show');
     });
+    
+    // Nuevas rutas para manejo de archivos de misión
+    Route::prefix('misiones')->group(function () {
+         // Obtener misiones del usuario (activas y pendientes)
+    Route::get('/usuario', [MisionController::class, 'misionesUsuario'])
+        ->name('misiones.usuario');
+    
+    // Obtener archivo de misión específica
+    Route::get('/{mision}/archivo', [MisionController::class, 'archivoMision'])
+        ->name('misiones.archivo');
+    
+    // Descargar archivo
+    Route::get('/{mision}/descargar', [MisionController::class, 'descargarArchivo'])
+        ->name('misiones.descargar');
+    });
 });

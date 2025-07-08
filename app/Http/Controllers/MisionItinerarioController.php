@@ -128,7 +128,7 @@ class MisionItinerarioController extends Controller
         return response()->json([
             'success' => true,
             'data' => [
-                'user_id' => (int)$user_id,
+                // 'user_id' => (int)$user_id,
                 'eventos' => $userItinerarios
             ]
         ]);
