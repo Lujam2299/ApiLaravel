@@ -73,9 +73,10 @@ return [
 
         'apps' => [
             [
-                'key' => env('REVERB_APP_KEY'),
-                'secret' => env('REVERB_APP_SECRET'),
-                'app_id' => env('REVERB_APP_ID'),
+                'key' => env('REVERB_APP_KEY', 'hgzazus1rhryyzxml62z'),
+                'secret' => env('REVERB_APP_SECRET', 'hgzazus1rhryyzxml62z'),
+                'app_id' => env('REVERB_APP_ID', 'hgzazus1rhryyzxml62z'),
+                
                 'options' => [
                     'host' => env('REVERB_HOST'),
                     'port' => env('REVERB_PORT', 8080),
@@ -87,6 +88,13 @@ return [
                 'ping_interval' => env('REVERB_APP_PING_INTERVAL', 60),
                 'activity_timeout' => env('REVERB_APP_ACTIVITY_TIMEOUT', 30),
                 'max_message_size' => env('REVERB_APP_MAX_MESSAGE_SIZE', 10_000),
+                'enable_client_messages' => true,
+                 'webhooks' => [
+                    [
+                        'url' => env('REVERB_WEBHOOK_URL'),
+                        'event_types' => ['client_event', 'channel_occupied', 'channel_vacated'],
+                    ],
+                ],
             ],
         ],
 

@@ -79,7 +79,8 @@ class MessageController extends Controller
         ]);
 
         // Cargar relaciones necesarias
-        $message->load('user', 'conversation');
+        $message->load('user');
+
 
         // Disparar evento de WebSocket
         broadcast(new MessageSent($message))->toOthers();

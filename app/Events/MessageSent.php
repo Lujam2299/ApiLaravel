@@ -2,12 +2,13 @@
 
 namespace App\Events;
 
-use App\Models\Message;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
+use App\Models\Message;
+use Illuminate\Broadcasting\PrivateChannel;
 
 class MessageSent implements ShouldBroadcast
 {
@@ -17,26 +18,21 @@ class MessageSent implements ShouldBroadcast
 
     public function __construct(Message $message)
     {
-        // Carga relaciones necesarias y asegura formato consistente
-        $this->message = $message->loadMissing(['user', 'parent']);
+        $this->message = $message;
     }
 
     public function broadcastOn()
     {
-        // Usa PresenceChannel para chats privados (opcional)
-        return new Channel('conversation.' . $this->message->conversation_id);
+        return new PrivateChannel('private-conversation.' . $this->message->conversation_id);
     }
 
     public function broadcastAs()
     {
-        // Nombre estándar para eventos de Pusher/Reverb
         return 'message.sent';
     }
 
     public function broadcastWith()
-    {
-        // Estructura consistente para el frontend
-        return [
+    {return [
             'message' => [
                 'id' => $this->message->id,
                 'body' => $this->message->body,
@@ -46,15 +42,9 @@ class MessageSent implements ShouldBroadcast
                 'user' => [
                     'id' => $this->message->user->id,
                     'name' => $this->message->user->name,
-                    // Agrega más campos si son necesarios
                 ],
-                // Incluye datos del mensaje padre si existe
-                'parent' => $this->message->parent ? [
-                    'id' => $this->message->parent->id,
-                    'body' => $this->message->parent->body
-                ] : null
-            ],
-            'sent_at' => now()->toISOString()
+                'read_at' => $this->message->read_at,
+            ]
         ];
     }
 }
