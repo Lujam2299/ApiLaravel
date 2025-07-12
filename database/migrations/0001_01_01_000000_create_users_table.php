@@ -11,22 +11,33 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (Schema::hasTable('api_users')) {
-            Schema::dropIfExists('api_users');
-        }
+       
 
-        Schema::create('api_users', function (Blueprint $table) {
+        Schema::create('users', function (Blueprint $table) {
             $table->id();
+            // $table->unsignedBigInteger('sol_alta_id')->nullable()->after('id');
+            // $table->unsignedBigInteger('sol_docs_id')->nullable()->after('sol_alta_id');
             $table->string('name');
-            $table->string('email')->unique();
+            $table->string('email')->unique(); //Hacer nullable
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
-            $table->enum('rol', ['interno', 'externo'])->default('interno');
+            $table->string('rol')->nullable();
+            $table->date('fecha_ingreso')->nullable();
             $table->string('telefono')->unique()->nullable();
             $table->string('punto')->nullable();
+            $table->string('estatus')->nullable();
+            $table->string('empresa')->nullable();
+            $table->string('num_empleado')->nullable();
             $table->rememberToken()->nullable();
-            $table->softDeletes(); 
+            $table->softDeletes();
             $table->timestamps();
+
+            // $table->foreign('sol_alta_id')
+            //     ->references('id')
+            //     ->on('solicitud_altas');
+            // $table->foreign('sol_docs_id')
+            //     ->references('id')
+            //     ->on('documentacion_altas');
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {

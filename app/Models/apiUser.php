@@ -15,7 +15,7 @@ class apiUser extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable, HasApiTokens;
-    protected $table = 'api_users';
+    protected $table = 'users';
     /**
      * The attributes that are mass assignable.
      *
@@ -83,5 +83,9 @@ class apiUser extends Authenticatable
     public function messages()
     {
         return $this->hasMany(Message::class);
+    }
+     public function turnos()
+    {
+        return $this->hasMany(Turno::class, 'User_id');
     }
 }

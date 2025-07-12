@@ -40,7 +40,7 @@ class MessageController extends Controller
     public function startConversation(Request $request)
     {
         $request->validate([
-            'user_id' => 'required|exists:api_users,id'
+            'user_id' => 'required|exists:users,id'
         ]);
 
         $user = apiUser::find($request->user_id);
@@ -48,7 +48,7 @@ class MessageController extends Controller
 
         // Verificar si ya existe una conversación entre estos usuarios
         $conversation = $currentUser->conversations()
-            ->whereHas('users', fn($q) => $q->where('api_users.id', $user->id))
+            ->whereHas('users', fn($q) => $q->where('users.id', $user->id))
             ->where('is_group', false)
             ->first();
 

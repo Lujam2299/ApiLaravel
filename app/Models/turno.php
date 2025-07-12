@@ -46,7 +46,7 @@ class turno extends Model
     protected $casts = [
         'Hora_inicio' => 'datetime:H:i',
         'Hora_final' => 'datetime:H:i',
-        'km_inicio' =>  'decimal:2',
+        'Km_inicio' =>  'decimal:2',
         'Km_final' => 'decimal:2',
         'Rayas_gasolina_inicio' => 'decimal:2',
         'Rayas_gasolina_final' => 'decimal:2',
@@ -61,10 +61,10 @@ class turno extends Model
      */
     public function user()
     {
-        return $this->belongsTo(apiUser::class, 'user_id');
+        return $this->belongsTo(apiUser::class, );
     }
        public function turnos()
     {
-        return $this->hasMany(turno::class, 'user_id');
+        return $this->hasMany(turno::class, 'User_id');
     }
 }
