@@ -19,16 +19,14 @@ class AuthController extends Controller
         try {
             $validatedData = $request->validate([
                 'email' => 'required|email',
-                'password' => ['required', Password::min(8)->letters()->mixedCase()->numbers()->symbols()],
+                'password' => ['required', Password::min(8)->letters()->numbers()],
             ], [
                 'email.required' => 'El correo es requerido.',
                 'email.email' => 'Por favor proporcione un correo válido.',
                 'password.required' => 'Contraseña es requerida.',
                 'password.min' => 'La contraseña debe contener al menos 8 caracteres, incluyendo mayúsculas, minúsculas, números y símbolos.',
                 'password.letters' => 'La contraseña debe contener al menos 1 letra.',
-                'password.mixedCase' => 'La contraseña debe contener al menos 1 letra mayúscula.',
                 'password.numbers' => 'La contraseña debe contener al menos 1 número.',
-                'password.symbols' => 'La contraseña debe contener al menos 1 símbolo.',
             ]);
 
             $user = apiUser::where('email', $validatedData['email'])->first();
@@ -71,18 +69,16 @@ class AuthController extends Controller
             // Validate the incoming request data
             $validatedData = $request->validate([
                 'name' => 'required|string|max:255',
-                'email' => 'required|string|email|max:255|unique:api_users',
-                'password' => ['required', 'confirmed', Password::min(8)->letters()->mixedCase()->numbers()->symbols()],
-                'telefono' => 'nullable|string|size:10|unique:api_users', // 'nullable' and 'unique' as per your migration
+                'email' => 'required|string|email|max:255|unique:users',
+                'password' => ['required', Password::min(8)->letters()->numbers()],
+                'telefono' => 'nullable|string|size:10|unique:users', // 'nullable' and 'unique' as per your migration
                 'rol' => 'nullable|in:interno,externo', // 'nullable' and restricted to 'interno' or 'externo'
                 'punto' => 'nullable|string|max:255', // 'nullable' and string
             ], [
                 // Custom validation messages for better user feedback
                 'email.required' => 'El correo es requerido.',
                 'password.letters' => 'La contraseña debe contener al menos 1 letra.',
-                'password.mixedCase' => 'La contraseña debe contener al menos 1 letra mayúscula.',
                 'password.numbers' => 'La contraseña debe contener al menos 1 número.',
-                'password.symbols' => 'La contraseña debe contener al menos 1 símbolo.',
                 'email.unique' => 'Este correo ya está registrado.',
                 'email.email' => 'Por favor proporcione un correo válido.',
                 'password.required' => 'Contraseña es requerida.',
