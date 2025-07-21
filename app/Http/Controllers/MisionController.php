@@ -95,31 +95,32 @@ class MisionController extends Controller
     /**
      * Descargar archivo de misión
      */
-    public function descargarArchivo(Request $request, $misionId)
-    {
-        try {
-            $user = $request->user();
-            $mision = Mision::findOrFail($misionId);
+   public function descargarArchivo(Request $request, $misionId)
+{
+    try {
+        $user = $request->user();
+        $mision = Mision::findOrFail($misionId);
 
-            // Verificar asignación
-            if (!in_array($user->id, $mision->agentes_id ?? [])) {
-                abort(403, 'No estás asignado a esta misión');
-            }
-
-            $rutaArchivo = $request->header('X-Archivo-Ruta') ?? $mision->arch_mision;
-            $rutaCompleta = storage_path('app/' . $rutaArchivo);
-
-            if (!file_exists($rutaCompleta)) {
-                abort(404, 'El archivo no existe');
-            }
-
-            return response()->download($rutaCompleta);
-
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Error al descargar: ' . $e->getMessage()
-            ], 500);
+        // Verificar asignación
+        if (!in_array($user->id, $mision->agentes_id ?? [])) {
+            abort(403, 'No estás asignado a esta misión');
         }
+
+        // Construir la ruta del archivo
+        $rutaArchivo = "misiones/{$mision->id}/arch_mision.pdf";
+        $rutaCompleta = storage_path('app/' . $rutaArchivo);
+
+        if (!file_exists($rutaCompleta)) {
+            abort(404, 'El archivo no existe');
+        }
+
+        return response()->download($rutaCompleta);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Error al descargar: ' . $e->getMessage()
+        ], 500);
     }
+}
 }

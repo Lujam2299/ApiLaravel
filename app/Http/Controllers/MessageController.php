@@ -23,11 +23,9 @@ class MessageController extends Controller
             ]);
 
             $users = apiUser::where('name', 'like', '%' . $validated['query'] . '%')
-                ->orWhere('email', 'like', '%' . $validated['query'] . '%')
-                ->orWhere('telefono', 'like', '%' . $validated['query'] . '%')
-                ->select('id', 'name', 'email', 'telefono')
-                ->limit(10)
-                ->get();
+                        ->select('id', 'name', 'email')
+                        ->limit(10)
+                        ->get();
 
             return response()->json($users);
         } catch (\Exception $e) {
