@@ -14,7 +14,7 @@ class Conversation extends Model
 
     public function users()
     {
-        return $this->belongsToMany(apiUser::class, 'conversation_user')
+        return $this->belongsToMany(apiUser::class, 'conversation_user','api_user_id','conversation_id')
             ->withPivot('last_read_at')
             ->withTimestamps();
     }
@@ -23,11 +23,11 @@ class Conversation extends Model
     {
         return $this->hasMany(Message::class);
     }
-    
+
     public function latestMessage()
 {
     return $this->hasOne(Message::class)->latestOfMany();
 }
 
-    
+
 }
