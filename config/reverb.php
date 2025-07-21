@@ -73,23 +73,29 @@ return [
 
         'apps' => [
             [
-                'key' => env('REVERB_APP_KEY', 'hgzazus1rhryyzxml62z'),
-                'secret' => env('REVERB_APP_SECRET', 'hgzazus1rhryyzxml62z'),
-                'app_id' => env('REVERB_APP_ID', 'hgzazus1rhryyzxml62z'),
-                
+                'key' => env('REVERB_APP_KEY',),
+                'secret' => env('REVERB_APP_SECRET'),
+                'app_id' => env('REVERB_APP_ID'),
+
                 'options' => [
                     'host' => env('REVERB_HOST'),
-                    'port' => env('REVERB_PORT', 8080),
-                    'scheme' => env('REVERB_SCHEME', 'http'),
-                    // 'useTLS' => env('REVERB_SCHEME', 'https') === 'https',
-                    'useTLS' => false,
+                    'port' => env('REVERB_PORT'),
+                    'scheme' => env('REVERB_SCHEME'),
+                    'useTLS' => env('REVERB_SCHEME', 'https') === 'https',
+
                 ],
-                'allowed_origins' => [ 'http://192.168.1.74:8000', 'http://localhost','*'],
+                'allowed_origins' => [
+                    'http://192.168.1.74:8000',
+                    'http://localhost:8081',
+                    // 'http://localhost',
+                    '*',
+                    // 'https://api.spyt.com.mx',
+                ],
                 'ping_interval' => env('REVERB_APP_PING_INTERVAL', 60),
                 'activity_timeout' => env('REVERB_APP_ACTIVITY_TIMEOUT', 30),
                 'max_message_size' => env('REVERB_APP_MAX_MESSAGE_SIZE', 10_000),
                 'enable_client_messages' => true,
-                 'webhooks' => [
+                'webhooks' => [
                     [
                         'url' => env('REVERB_WEBHOOK_URL'),
                         'event_types' => ['client_event', 'channel_occupied', 'channel_vacated'],
