@@ -72,7 +72,7 @@ class apiUser extends Authenticatable
      */
     public function conversations()
     {
-        return $this->belongsToMany(Conversation::class, 'conversation_user','api_user_id', 'conversation_id')
+        return $this->belongsToMany(Conversation::class, 'conversation_user')
             ->withPivot('last_read_at')
             ->withTimestamps();
     }

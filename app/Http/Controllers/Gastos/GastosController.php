@@ -43,8 +43,7 @@ class GastosController extends Controller
                 'Evidencia' => $path,
                 'Tipo' => $validated['Tipo'],
             ];
-
-            // Solo agregar campos si son Gasolina
+// Solo agregar campos si son Gasolina
             if ($validated['Tipo'] === 'Gasolina') {
                 $gastoData['Km'] = $validated['Km'];
                 $gastoData['Gasolina_antes_carga'] = $validated['Gasolina_antes_carga'];

@@ -29,7 +29,7 @@ class MessageController extends Controller
 
             return response()->json($users);
         } catch (\Exception $e) {
-            // Log del error (ver storage/logs/laravel.log)
+        
             Log::error("Error en searchUsers: " . $e->getMessage());
             return response()->json(['error' => 'Error interno del servidor'], 500);
         }
@@ -44,7 +44,7 @@ class MessageController extends Controller
         $user = apiUser::find($request->user_id);
         $currentUser = Auth::user();
 
-        // Verificar si ya existe una conversación entre estos usuarios
+       
         $conversation = $currentUser->conversations()
             ->whereHas('users', fn($q) => $q->where('users.id', $user->id))
             ->where('is_group', false)
@@ -76,11 +76,10 @@ class MessageController extends Controller
             'body' => $request->body
         ]);
 
-        // Cargar relaciones necesarias
+    
         $message->load('user');
 
 
-        // Disparar evento de WebSocket
         broadcast(new MessageSent($message))->toOthers();
 
         return response()->json([
@@ -92,20 +91,20 @@ class MessageController extends Controller
 
     public function getMessages($conversationId)
     {
-        // Verificar acceso a la conversación
+       
         $conversation = Auth::user()->conversations()
             ->where('conversations.id', $conversationId)
             ->firstOrFail();
 
-        // Obtener mensajes ordenados
+        
         $messages = $conversation->messages()
             ->with(['user' => function ($query) {
-                $query->select('id', 'name'); // Solo datos básicos del usuario
+                $query->select('id', 'name'); 
             }])
             ->orderBy('created_at', 'asc')
             ->get();
 
-        // Marcar mensajes como leídos
+        
         $conversation->messages()
             ->whereNull('read_at')
             ->where('user_id', '!=', Auth::id())
@@ -140,7 +139,7 @@ class MessageController extends Controller
                 ->map(function ($conversation) use ($user) {
                     $otherUser = $conversation->users->firstWhere('id', '!=', $user->id);
 
-                    // Obtener el conteo de mensajes no leídos (creados después del last_read_at)
+                  
                     $unreadCount = $conversation->messages()
                         ->where('user_id', '!=', $user->id)
                         ->where('created_at', '>', $conversation->pivot->last_read_at ?? '1970-01-01')
