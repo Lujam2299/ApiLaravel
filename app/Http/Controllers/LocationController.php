@@ -23,7 +23,7 @@ public function store(Request $request) {
     } catch (\Exception $e) {
         return response()->json([
             'message' => 'Error al guardar la ubicación',
-            'error' => $e->getMessage() // Detalle del error
+            'error' => $e->getMessage() 
         ], 500);
     }
 }

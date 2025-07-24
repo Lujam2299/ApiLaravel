@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\turno;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage; // No olvides importar Storage
+use Illuminate\Support\Facades\Storage; 
 
 class TurnosController extends Controller
 {
@@ -19,13 +19,13 @@ class TurnosController extends Controller
                 return response()->json(['error' => 'Usuario no autenticado'], 401);
             }
 
-            // Reglas base
+        
             $rules = [
                 'Placas_unidad' => 'required|string|max:20',
                 'Tipo' => 'required|in:Entrada,Salida',
             ];
 
-            // Reglas condicionales
+           
             if ($request->input('Tipo') === 'Entrada') {
                 $rules += [
                     'Hora_inicio' => 'required|date_format:H:i',
@@ -44,11 +44,11 @@ class TurnosController extends Controller
 
             $validatedData = $request->validate($rules);
 
-            // Procesar archivos
+           
             $fileField = $request->input('Tipo') === 'Entrada' ? 'Evidencia_inicio' : 'Evidencia_final';
             $filePath = $request->file($fileField)->store('evidencias', 'public');
 
-            // Crear registro
+           
             $turnoData = [
                 'User_id' => $user->id,
                 'Nombre_elemento' => $user->name,
@@ -58,7 +58,7 @@ class TurnosController extends Controller
                 $fileField => $filePath
             ];
 
-            // Asignar campos dinámicamente
+            
             $prefix = $validatedData['Tipo'] === 'Entrada' ? 'inicio' : 'final';
             $turnoData["Hora_$prefix"] = $validatedData["Hora_$prefix"];
             $turnoData["Km_$prefix"] = $validatedData["Km_$prefix"];

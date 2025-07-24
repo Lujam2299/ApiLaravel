@@ -5,12 +5,12 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use App\Models\apiUser; // Asegúrate de que este es el modelo de usuario correcto
-use App\Models\Mision; // ¡IMPORTANTE! Importa el modelo Mision
+use App\Models\apiUser; 
+use App\Models\Mision; 
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
-use Illuminate\Support\Facades\Auth; // Asegúrate de importar Auth para Auth::user() si lo usas
+use Illuminate\Support\Facades\Auth; 
 
 class AuthController extends Controller
 {
@@ -66,16 +66,16 @@ class AuthController extends Controller
     public function register(Request $request)
     {
         try {
-            // Validate the incoming request data
+          
             $validatedData = $request->validate([
                 'name' => 'required|string|max:255',
                 'email' => 'required|string|email|max:255|unique:users',
                 'password' => ['required', Password::min(8)->letters()->numbers()],
-                'telefono' => 'nullable|string|size:10|unique:users', // 'nullable' and 'unique' as per your migration
-                'rol' => 'nullable|in:interno,externo', // 'nullable' and restricted to 'interno' or 'externo'
-                'punto' => 'nullable|string|max:255', // 'nullable' and string
+                'telefono' => 'nullable|string|size:10|unique:users', 
+                'rol' => 'nullable|in:interno,externo', 
+                'punto' => 'nullable|string|max:255', 
             ], [
-                // Custom validation messages for better user feedback
+               
                 'email.required' => 'El correo es requerido.',
                 'password.letters' => 'La contraseña debe contener al menos 1 letra.',
                 'password.numbers' => 'La contraseña debe contener al menos 1 número.',
@@ -88,22 +88,22 @@ class AuthController extends Controller
                 'rol.in' => 'El rol debe ser "interno" o "externo".',
             ]);
 
-            // Create the new user using the validated data
+           
             $user = apiUser::create([
                 'name' => $validatedData['name'],
                 'email' => $validatedData['email'],
                 'password' => Hash::make($validatedData['password']),
-                'telefono' => $validatedData['telefono'] ?? null, // Assign null if not provided in request
-                'rol' => $validatedData['rol'] ?? 'interno',      // Assign validated role, or 'interno' as default
-                'punto' => $validatedData['punto'] ?? null,      // Assign null if not provided
-                'remember_token' => Str::random(80), // Consider removing if only using Sanctum tokens
-                'email_verified_at' => now() // Typically set to null and filled upon email verification
+                'telefono' => $validatedData['telefono'] ?? null, 
+                'rol' => $validatedData['rol'] ?? 'interno',      
+                'punto' => $validatedData['punto'] ?? null,    
+                'remember_token' => Str::random(80), 
+                'email_verified_at' => now() 
             ]);
 
-            // Create a Sanctum authentication token for the new user
+          
             $token = $user->createToken('auth_token')->plainTextToken;
 
-            // Return a successful JSON response with the access token and user data
+            
             return response()->json([
                 'access_token' => $token,
                 'token_type' => 'Bearer',
@@ -112,17 +112,16 @@ class AuthController extends Controller
                     'id' => $user->id,
                     'name' => $user->name,
                     'email' => $user->email,
-                    'telefono' => $user->telefono, // Include telefono in the response
-                    'rol' => $user->rol,          // Include rol in the response
-                    'punto' => $user->punto,      // Include punto in the response
+                    'telefono' => $user->telefono, 
+                    'rol' => $user->rol,          
+                    'punto' => $user->punto,     
                 ]
             ], 201);
         } catch (ValidationException $e) {
-            // Catch and respond with validation errors
+           
             return response()->json(['message' => 'Error de validación', 'errors' => $e->errors()], 422);
         } catch (\Exception $e) {
-            // Catch and respond with generic internal server errors
-            // In a production environment, you would log $e->getMessage() for debugging.
+            
             return response()->json(['message' => 'Error interno del servidor'], 500);
         }
     }
