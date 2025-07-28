@@ -5,8 +5,11 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Mision;
 use Illuminate\Support\Facades\Storage;
- use Illuminate\Support\Facades\Log;
- use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use App\Models\apiUser;
+use PDF;
+use Illuminate\Support\Str;
 
 class MisionController extends Controller
 {
@@ -113,66 +116,39 @@ class MisionController extends Controller
     //         ], 500);
     //     }
     // }
-public function descargarArchivo(Request $request, $misionId) {
-    try {
-        
-        Log::channel('descargas')->info("Inicio descarga archivo", [
-            'user_id' => $request->user()->id,
-            'mision_id' => $misionId,
-            'ip' => $request->ip()
-        ]);
+    public function descargarArchivo(Request $request, $misionId)
+    {
+        try {
+            Log::info("Intentando descargar archivo para la misionId: $misionId");
 
-        $user = $request->user();
-        $mision = Mision::findOrFail($misionId);
+            $user = $request->user();
+            Log::info("Usuario ID: {$user->id} intentando acceder a la misionId: $misionId");
 
-        Log::debug("Datos completos de misión", ['mision' => $mision->toArray()]);
+            $mision = Mision::findOrFail($misionId);
+            Log::info("Misión encontrada: $misionId. Verificando permisos.");
 
-        
-        if (!in_array($user->id, $mision->agentes_id ?? [])) {
-            Log::warning("Acceso no autorizado", ['user_id' => $user->id]);
-            abort(403, 'No estás asignado a esta misión');
-        }
+            if (!in_array($user->id, $mision->agentes_id ?? [])) {
+                Log::warning("Acceso denegado para usuario ID: {$user->id} en misionId: $misionId");
+                abort(403, 'No estás asignado a esta misión');
+            }
 
-        
-        $rutaArchivo = $mision->arch_mision; 
-        
-        if (empty($rutaArchivo)) {
-            Log::error("Campo arch_mision vacío", ['mision_id' => $misionId]);
-            abort(404, 'La misión no tiene archivo asociado');
-        }
+            Log::info("Permiso concedido para el usuario ID: {$user->id} en la misionId: $misionId. Generando PDF.");
 
-        
-        $rutaRelativa = ltrim($rutaArchivo, '/');
-        $rutaCompleta = storage_path($rutaRelativa);
-
-        Log::debug("Rutas construidas", [
-            'bd' => $rutaArchivo,
-            'relativa' => $rutaRelativa,
-            'completa' => $rutaCompleta
-        ]);
-
-        
-        if (!file_exists($rutaCompleta)) {
-            Log::error("Archivo no encontrado", [
-                'ruta' => $rutaCompleta,
-                'contenido_directorio' => scandir(dirname($rutaCompleta))
+            $pdf = PDF::loadView('misiones.pdf', [
+                'mision' => $mision
             ]);
-            abort(404, 'El archivo no existe en el servidor');
+
+            $pdf->setPaper('A4', 'portrait');
+            $nombreBase = Str::slug($mision->nombre_clave ?? 'reporte-mision');
+            $nombreArchivo = "{$nombreBase}.pdf";
+
+            return $pdf->download($nombreArchivo);
+        } catch (\Exception $e) {
+            Log::error("Error al generar el PDF para la misionId: $misionId. Error: " . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al generar el PDF: ' . $e->getMessage()
+            ], 500);
         }
-
-        
-        Log::info("Iniciando descarga", ['ruta' => $rutaCompleta]);
-        return response()->download($rutaCompleta, basename($rutaArchivo));
-
-    } catch (ModelNotFoundException $e) {
-        Log::error("Misión no encontrada", ['error' => $e->getMessage()]);
-        abort(404, 'Misión no encontrada');
-    } catch (\Exception $e) {
-        Log::error("Error en descarga", [
-            'error' => $e->getMessage(),
-            'trace' => $e->getTraceAsString()
-        ]);
-        abort(500, 'Error al procesar la descarga: ' . $e->getMessage());
     }
-}
 }

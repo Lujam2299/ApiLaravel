@@ -85,7 +85,7 @@ return [
 
                 ],
                 'allowed_origins' => [
-                    'http://192.168.1.74:8000',
+                    'http://192.168.0.10:8000',
                     'http://localhost:8081',
                     // 'http://localhost',
                     '*',

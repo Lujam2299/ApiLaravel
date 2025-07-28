@@ -39,7 +39,8 @@ class Mision extends Model
         'datos_aeropuerto' => 'array',
         'datos_vuelo' => 'array',
         'datos_hospital' => 'array',
-        'datos_embajada' => 'array'
+        'datos_embajada' => 'array',
+        'nivel_amenaza' => 'string',
     ];
 
 
