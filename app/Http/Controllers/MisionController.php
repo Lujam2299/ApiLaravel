@@ -25,12 +25,18 @@ class MisionController extends Controller
                     'id',
                     'nombre_clave',
                     'estatus',
-                    'arch_mision',
                     'fecha_inicio',
                     'fecha_fin',
+                    'nivel_amenaza',
+                    'tipo_servicio',
+                    'cliente',
+                    'pasajeros',
+                    'tipo_operacion',
+                    'num_vehiculos',
                     'updated_at'
                 ])
                 ->orderBy('estatus', 'desc')
+                ->orderBy('fecha_inicio', 'desc')
                 ->get();
 
             return response()->json([
@@ -45,8 +51,7 @@ class MisionController extends Controller
         }
     }
 
-
-    public function archivoMision(Request $request, $misionId)
+   public function archivoMision(Request $request, $misionId)
     {
         try {
             $user = $request->user();
@@ -90,32 +95,6 @@ class MisionController extends Controller
         }
     }
 
-    // public function descargarArchivo(Request $request, $misionId){
-    //     try {
-    //         $user = $request->user();
-    //         $mision = Mision::findOrFail($misionId);
-
-
-    //         if (!in_array($user->id, $mision->agentes_id ?? [])) {
-    //             abort(403, 'No estás asignado a esta misión');
-    //         }
-
-
-    //         $rutaArchivo = "misiones/{$mision->id}/documento_prueba.pdf";
-    //         $rutaCompleta = storage_path('app/' . $rutaArchivo);
-
-    //         if (!file_exists($rutaCompleta)) {
-    //             abort(404, 'El archivo no existe');
-    //         }
-
-    //         return response()->download($rutaCompleta);
-    //     } catch (\Exception $e) {
-    //         return response()->json([
-    //             'success' => false,
-    //             'message' => 'Error al descargar: ' . $e->getMessage()
-    //         ], 500);
-    //     }
-    // }
     public function descargarArchivo(Request $request, $misionId)
     {
         try {
