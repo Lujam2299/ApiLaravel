@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use App\Models\apiUser;
-use Barryvdh\DomPDF\Facade as PDF;
+use PDF;
 use Illuminate\Support\Str;
 
 class MisionController extends Controller
