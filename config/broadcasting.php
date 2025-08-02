@@ -38,7 +38,7 @@ return [
             'options' => [
                 'host' => env('REVERB_HOST'),
                 'port' => env('REVERB_PORT',9000),
-                'scheme' => env('REVERB_SCHEME'),
+                'scheme' => env('REVERB_SCHEME', 'http'),
                 'useTLS' => env('REVERB_SCHEME', 'http') === 'https',
             ],
             'client_options' => [
@@ -54,7 +54,7 @@ return [
             'options' => [
                 'cluster' => env('PUSHER_APP_CLUSTER'),
                 'encrypted' => true,
-                'host' => '192.168.0.10',
+                'host' => '192.168.1.74',
                 'port' => 6001,
                 'scheme' => 'http',
                 'useTLS' => false,
@@ -62,6 +62,10 @@ return [
             'client_options' => [
                 // Guzzle client options: https://docs.guzzlephp.org/en/stable/request-options.html
             ],
+        ],
+        'redis'=>[
+            'driver' => 'redis',
+            'connection' => 'default',
         ],
 
         'ably' => [
@@ -76,6 +80,7 @@ return [
         'null' => [
             'driver' => 'null',
         ],
+
 
     ],
 

@@ -23,17 +23,49 @@ class MessageController extends Controller
             ]);
 
             $users = apiUser::where('name', 'like', '%' . $validated['query'] . '%')
-                        ->select('id', 'name', 'email')
-                        ->limit(10)
-                        ->get();
+                ->select('id', 'name', 'email')
+                ->limit(10)
+                ->get();
 
             return response()->json($users);
         } catch (\Exception $e) {
-        
+
             Log::error("Error en searchUsers: " . $e->getMessage());
             return response()->json(['error' => 'Error interno del servidor'], 500);
         }
     }
+
+    public function sendMessage(Request $request)
+    {
+        $request->validate([
+            'conversation_id' => 'required|exists:conversations,id',
+            'body' => 'required|string'
+        ]);
+
+        
+        $message = Message::create([
+            'conversation_id' => $request->conversation_id,
+            'user_id' => Auth::id(),
+            'body' => $request->body
+        ]);
+
+       
+        $message->load('user');
+
+        
+        Log::info('Mensaje enviado', ['message_id' => $message->id, 'conversation_id' => $message->conversation_id, 'user_id' => Auth::id()]);
+
+      
+        broadcast(new MessageSent($message))->toOthers();
+        //broadcast(new MessageSent($message));
+
+         return response()->json(['success' => true, 'data' => $message]);
+        // return response()->json([
+        //     'status' => 'success',
+        //     'message' => $message
+        // ]);
+    }
+
 
     public function startConversation(Request $request)
     {
@@ -44,7 +76,7 @@ class MessageController extends Controller
         $user = apiUser::find($request->user_id);
         $currentUser = Auth::user();
 
-       
+
         $conversation = $currentUser->conversations()
             ->whereHas('users', fn($q) => $q->where('users.id', $user->id))
             ->where('is_group', false)
@@ -63,48 +95,25 @@ class MessageController extends Controller
             'messages' => $conversation->messages()->with('user')->get()
         ]);
     }
-    public function sendMessage(Request $request)
-    {
-        $request->validate([
-            'conversation_id' => 'required|exists:conversations,id',
-            'body' => 'required|string'
-        ]);
 
-        $message = Message::create([
-            'conversation_id' => $request->conversation_id,
-            'user_id' => Auth::id(),
-            'body' => $request->body
-        ]);
-
-    
-        $message->load('user');
-
-
-        broadcast(new MessageSent($message))->toOthers();
-
-        return response()->json([
-            'status' => 'success',
-            'message' => $message
-        ]);
-    }
 
 
     public function getMessages($conversationId)
     {
-       
+
         $conversation = Auth::user()->conversations()
             ->where('conversations.id', $conversationId)
             ->firstOrFail();
 
-        
+
         $messages = $conversation->messages()
             ->with(['user' => function ($query) {
-                $query->select('id', 'name'); 
+                $query->select('id', 'name');
             }])
             ->orderBy('created_at', 'asc')
             ->get();
 
-        
+
         $conversation->messages()
             ->whereNull('read_at')
             ->where('user_id', '!=', Auth::id())
@@ -139,7 +148,7 @@ class MessageController extends Controller
                 ->map(function ($conversation) use ($user) {
                     $otherUser = $conversation->users->firstWhere('id', '!=', $user->id);
 
-                  
+
                     $unreadCount = $conversation->messages()
                         ->where('user_id', '!=', $user->id)
                         ->where('created_at', '>', $conversation->pivot->last_read_at ?? '1970-01-01')

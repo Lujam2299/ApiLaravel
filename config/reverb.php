@@ -41,7 +41,7 @@ return [
                 'enabled' => env('REVERB_SCALING_ENABLED', false),
                 'channel' => env('REVERB_SCALING_CHANNEL', 'reverb'),
                 'server' => [
-                    'url' => env('REDIS_URL'),
+                    //'url' => env('REDIS_URL'),
                     'host' => env('REDIS_HOST', '127.0.0.1'),
                     'port' => env('REDIS_PORT', '6379'),
                     'username' => env('REDIS_USERNAME'),
@@ -52,6 +52,10 @@ return [
             ],
             'pulse_ingest_interval' => env('REVERB_PULSE_INGEST_INTERVAL', 15),
             'telescope_ingest_interval' => env('REVERB_TELESCOPE_INGEST_INTERVAL', 15),
+            'server' =>true,
+            'htt_host'=> '0.0.0.0',
+            'htt_port'=> '9000',
+            
         ],
 
     ],
@@ -73,7 +77,7 @@ return [
 
         'apps' => [
             [
-                'key' => env('REVERB_APP_KEY',),
+                'key' => env('REVERB_APP_KEY'),
                 'secret' => env('REVERB_APP_SECRET'),
                 'app_id' => env('REVERB_APP_ID'),
 
@@ -81,26 +85,20 @@ return [
                     'host' => env('REVERB_HOST'),
                     'port' => env('REVERB_PORT'),
                     'scheme' => env('REVERB_SCHEME'),
-                    'useTLS' => env('REVERB_SCHEME', 'https') === 'https',
+                    // 'useTLS' => env('REVERB_SCHEME', 'https') === 'https',
+                    'useTLS' => false,
 
                 ],
-                'allowed_origins' => [
-                    'http://192.168.0.10:8000',
-                    'http://localhost:8081',
-                    // 'http://localhost',
+                'client' => env('REVERB_CLIENT', 'pusher'),
+                'allowed_origins' => [                
                     '*',
-                    // 'https://api.spyt.com.mx',
                 ],
                 'ping_interval' => env('REVERB_APP_PING_INTERVAL', 60),
                 'activity_timeout' => env('REVERB_APP_ACTIVITY_TIMEOUT', 30),
                 'max_message_size' => env('REVERB_APP_MAX_MESSAGE_SIZE', 10_000),
                 'enable_client_messages' => true,
-                'webhooks' => [
-                    [
-                        'url' => env('REVERB_WEBHOOK_URL'),
-                        'event_types' => ['client_event', 'channel_occupied', 'channel_vacated'],
-                    ],
-                ],
+                
+                
             ],
         ],
 
